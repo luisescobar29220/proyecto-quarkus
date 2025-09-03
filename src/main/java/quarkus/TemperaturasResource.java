@@ -1,24 +1,27 @@
 package quarkus;
 
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import java.util.*;
 
 @Path("/temperaturas")
 public class TemperaturasResource {
 
-    //acá se crea la lista para las temperaturas
-    private List<Temperatura> valores = new ArrayList<>();
+    private TemperaturasService temperaturas;
+
+    @Inject
+    public TemperaturasResource(TemperaturasService temperaturas){
+        this.temperaturas = temperaturas;
+    }
 
     //agrga las temperaturas a una lista
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Temperatura Nueva(Temperatura temp){
-        valores.add(temp);
+        temperaturas.addTemperatura(temp);
         return temp;
     }
 
@@ -26,7 +29,29 @@ public class TemperaturasResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<Temperatura> list(){
-        return Collections.unmodifiableList(valores);
+        return temperaturas.obtenerTemperaturas();
+
+    }
+
+    @GET
+    @Path("/maxima")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response maxima(){
+        if (temperaturas.isEmpty()){
+            return Response.status(404).entity("no hay temperaturas").build();
+        } else{
+            int temperaturaMaxima = temperaturas.maxima();
+            return Response.ok(Integer.toString(temperaturaMaxima)).build();
+        }
+    }
+
+    @GET
+    @Path("{ciudad}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Temperatura sacar(@PathParam("ciudad") String ciudad){
+        return temperaturas.sacarTemperatura(ciudad).
+                orElseThrow(()->
+                new NoSuchElementException("no hay registro para la ciudad "+ ciudad));
 
     }
 /*
