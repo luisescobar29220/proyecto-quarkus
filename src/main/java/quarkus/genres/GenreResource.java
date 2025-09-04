@@ -19,6 +19,7 @@ public class GenreResource {
     @Inject
     private GenreRepository genres;
 
+    // nos permite tener la pagina en total que tenemos y la cantidad que hay en ellas
     @GET
     public PaginatedResponse<Genre> list(
             @QueryParam("page") @DefaultValue("1") int page){
