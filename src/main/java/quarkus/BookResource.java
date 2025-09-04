@@ -1,5 +1,6 @@
 package quarkus;
 
+import io.quarkus.panache.common.Sort;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
@@ -14,10 +15,33 @@ public class BookResource {
     @Inject
     private BookRepository bookRepository;
 
+
     @GET
-    public List<Book> index(){
-        return bookRepository.listAll();
+    public List<Book> index(@QueryParam("q") String query ){
+
+        if(query == null){
+            return bookRepository.listAll(Sort.by("pubDate", Sort.Direction.Descending));
+        }else {
+            String filter = "%" + query + "%";
+            return bookRepository.list("title ILIKE ?1 OR description ILIKE?2",filter, filter);
+        }
+
+
+
+        /* este codigo me filtrar por paginas de manera dinamica
+        if(numPages == null){
+            return bookRepository.listAll();
+        }else {
+            return bookRepository.list("numPages >= ?1", numPages);
+        }*/
+
+
+        //return bookRepository.list("numPages >= 500"); // me fistrar por paginas pero lo hace de forma estatica
+        //return bookRepository.list("genre","tragicomedia");//me filtrar de forma estatica
+        //return bookRepository.listAll();
     }
+
+
 
     @POST
     public Book insert(Book insertedBook){
