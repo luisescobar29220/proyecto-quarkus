@@ -1,5 +1,8 @@
 package quarkus.genres;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -23,13 +26,21 @@ public class Genre {
     @GeneratedValue
     private Long id;
 
+    @JsonProperty("genreName")//renombro el nombre de name a genreName
+    @JsonAlias({"genreName","name"})// cuando quiera crear un genero puedo usar genreName o name
     private String name;
 
     @CreationTimestamp
+    @JsonIgnore
     private LocalDate createAt;
 
     @UpdateTimestamp
+    @JsonIgnore
     private LocalDate updateAt;
+
+    public int getClassification(){
+        return name.length();
+    }
 
     public Long getId() {
         return id;
