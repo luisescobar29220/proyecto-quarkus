@@ -1,6 +1,7 @@
 package quarkus.genres;
 
 import io.quarkus.panache.common.Page;
+import io.quarkus.panache.common.Parameters;
 import io.quarkus.panache.common.Sort;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -22,10 +23,18 @@ public class GenreResource {
     // nos permite tener la pagina en total que tenemos y la cantidad que hay en ellas
     @GET
     public PaginatedResponse<Genre> list(
-            @QueryParam("page") @DefaultValue("1") int page){
+            @QueryParam("page") @DefaultValue("1") int page,
+            @QueryParam("q") String q)
+    {
+        var query = genres.findPage(page);
 
-        Page p = new Page(page -1,5);
-        var query = genres.findAll(Sort.descending("createAt")).page(p);
+
+        if(q != null){
+            var nameLike = "%" + q + "%";
+            query.filter("name.like", Parameters.with("name", nameLike));
+        }
+
+
         return new PaginatedResponse<>(query);
     }
 

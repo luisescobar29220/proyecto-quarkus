@@ -3,13 +3,20 @@ package quarkus.genres;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import jakarta.ws.rs.PathParam;
+import org.hibernate.annotations.*;
 
 import java.time.LocalDate;
 import java.util.Objects;
 
 @Entity
+@FilterDef(
+        name = "name.like",
+        parameters = @ParamDef(name = "name", type = String.class)
+)
+@Filter(
+        name = "name.like",
+        condition = "LOWER(name) LIKE LOWER(:name)")
 public class Genre {
 
     @Id
