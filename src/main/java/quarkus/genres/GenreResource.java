@@ -1,5 +1,6 @@
 package quarkus.genres;
 
+import io.quarkiverse.groovy.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Parameters;
 import io.quarkus.panache.common.Sort;
@@ -30,46 +31,46 @@ public class GenreResource {
 
     // nos permite tener la pagina en total que tenemos y la cantidad que hay en ellas
     @GET
-    public PaginatedResponse<Genre> list(
+    public PaginatedResponse<GenreResponseDto> list(
             @QueryParam("page") @DefaultValue("1") int page,
             @QueryParam("q") String q)
     {
-        var query = genres.findPage(page);
-
+        PanacheQuery<Genre> query = genres.findPage(page);
 
         if(q != null){
             var nameLike = "%" + q + "%";
             query.filter("name.like", Parameters.with("name", nameLike));
         }
-
-
-        return new PaginatedResponse<>(query);
+        PanacheQuery<GenreResponseDto> present = query.project(GenreResponseDto.class);
+        return new PaginatedResponse<>(present);
     }
 
     @POST
     public Response create(CreateGenreDto genre){
         var entity = mapper.fromCreate(genre);
         genres.persist(entity);
-        return Response.created(URI.create("/genres/" + entity.getId())).entity(entity).build();
+        var representation = mapper.present(entity);
+        return Response.created(URI.create("/genres/" + entity.getId())).entity(representation).build();
     }
 
     @GET
     @Path("{id}")
-    public Genre get(@PathParam("id") Long id){
+    public GenreResponseDto get(@PathParam("id") Long id){
         return genres
                 .findByIdOptional(id)
+                .map(mapper::present)
                 .orElseThrow(()-> new NoSuchElementException("Genre " +id+ "not found"));
     }
 
     @PUT
     @Path("{id}")
-    public Genre update(@PathParam("id") Long id, UpdateGenreDto inbox){
+    public GenreResponseDto update(@PathParam("id") Long id, UpdateGenreDto inbox){
         Genre found = genres
                 .findByIdOptional(id)
                 .orElseThrow(()-> new NoSuchElementException("Genre " +id+ "not found"));
         mapper.update(inbox,found);
         genres.persist(found);
-        return found;
+        return mapper.present(found);
     }
 
     @DELETE

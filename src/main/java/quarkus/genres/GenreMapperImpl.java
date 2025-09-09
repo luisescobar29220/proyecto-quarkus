@@ -16,4 +16,9 @@ public class GenreMapperImpl implements GenreMapper {
     public void update(UpdateGenreDto dto, Genre genre) {
         genre.setName(dto.name());
     }
+
+    @Override
+    public GenreResponseDto present(Genre g) {
+        return new GenreResponseDto(g.getId(),g.getName());
+    }
 }

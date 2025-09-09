@@ -12,7 +12,6 @@ public class GenreRepository implements PanacheRepository<Genre> {
 
     public PanacheQuery<Genre> findPage(int page){
         Page p = new Page(page -1,5);
-
         var query = findAll(Sort.descending("createAt"));
         query.page(p);
         return query;

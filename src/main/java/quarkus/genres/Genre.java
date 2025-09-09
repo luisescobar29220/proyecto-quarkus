@@ -31,11 +31,11 @@ public class Genre {
     private String name;
 
     @CreationTimestamp
-    @JsonIgnore
+    //@JsonIgnore
     private LocalDate createAt;
 
     @UpdateTimestamp
-    @JsonIgnore
+    //@JsonIgnore
     private LocalDate updateAt;
 
     public int getClassification(){
