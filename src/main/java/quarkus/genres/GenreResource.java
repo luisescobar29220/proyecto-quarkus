@@ -6,6 +6,7 @@ import io.quarkus.panache.common.Parameters;
 import io.quarkus.panache.common.Sort;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
 import quarkus.PaginatedResponse;
@@ -23,10 +24,13 @@ public class GenreResource {
 
     private GenreMapper mapper;
 
+    private GenreValidator validator;
+
     @Inject
-    public GenreResource (GenreRepository genres , GenreMapper mapper){
+    public GenreResource (GenreRepository genres , GenreMapper mapper, GenreValidator validator){
         this.genres = genres;
         this.mapper = mapper;
+        this.validator = validator;
     }
 
     // nos permite tener la pagina en total que tenemos y la cantidad que hay en ellas
@@ -46,7 +50,12 @@ public class GenreResource {
     }
 
     @POST
-    public Response create(CreateGenreDto genre){
+    public Response create( CreateGenreDto genre){
+        var error = this.validator.validateGenre(genre);
+        if(error.isPresent()){
+            var msg = error.get();
+            return Response.status(400).entity(msg).build();
+        }
         var entity = mapper.fromCreate(genre);
         genres.persist(entity);
         var representation = mapper.present(entity);
@@ -64,7 +73,7 @@ public class GenreResource {
 
     @PUT
     @Path("{id}")
-    public GenreResponseDto update(@PathParam("id") Long id, UpdateGenreDto inbox){
+    public GenreResponseDto update(@PathParam("id") Long id,@Valid UpdateGenreDto inbox){
         Genre found = genres
                 .findByIdOptional(id)
                 .orElseThrow(()-> new NoSuchElementException("Genre " +id+ "not found"));
